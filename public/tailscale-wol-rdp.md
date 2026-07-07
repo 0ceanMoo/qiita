@@ -74,20 +74,18 @@ graph LR
 各デバイス間の通信の流れを示します。Raspberry Piを中継してWindowsを起動させ、起動完了を待ってからRDP接続する順序がポイントです。
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeCSS': 'svg { background: #ffffff !important; } .messageText, .loopText, .noteText, .labelText { fill: #1f2937 !important; color: #1f2937 !important; }', 'themeVariables': {'background': '#ffffff', 'mainBkg': '#ffffff', 'primaryTextColor': '#1f2937', 'textColor': '#1f2937', 'actorBkg': '#4A90D9', 'actorTextColor': '#ffffff', 'actorBorder': '#2171B5', 'activationBkgColor': '#DBEAFE', 'activationBorderColor': '#2171B5', 'sequenceNumberColor': '#1f2937', 'lineColor': '#2563EB', 'signalColor': '#2563EB', 'signalTextColor': '#1f2937', 'labelBoxBkgColor': '#ffffff', 'labelBoxBorderColor': '#CBD5E1', 'labelTextColor': '#1f2937', 'loopTextColor': '#1f2937', 'noteBkgColor': '#FFF9C4', 'noteTextColor': '#374151', 'noteBorderColor': '#D97706'}}}%%
+%%{init: {'theme': 'base', 'themeCSS': '.mermaid, .mermaid svg, svg, svg[role="graphics-document"] { background: #ffffff !important; } .messageText, .loopText, .noteText, .labelText, .actor > text { fill: #1f2937 !important; color: #1f2937 !important; }', 'themeVariables': {'background': '#ffffff', 'mainBkg': '#ffffff', 'primaryTextColor': '#1f2937', 'textColor': '#1f2937', 'actorBkg': '#4A90D9', 'actorTextColor': '#ffffff', 'actorBorder': '#2171B5', 'activationBkgColor': '#DBEAFE', 'activationBorderColor': '#2171B5', 'sequenceNumberColor': '#1f2937', 'lineColor': '#2563EB', 'signalColor': '#2563EB', 'signalTextColor': '#1f2937', 'labelBoxBkgColor': '#ffffff', 'labelBoxBorderColor': '#CBD5E1', 'labelTextColor': '#1f2937', 'loopTextColor': '#1f2937', 'noteBkgColor': '#FFF9C4', 'noteTextColor': '#374151', 'noteBorderColor': '#D97706'}}}%%
 sequenceDiagram
     participant Mac as Mac Studio
     participant Pi as Raspberry Pi
     participant Win as Windows 11 Pro
-    rect rgb(255, 255, 255)
-        Mac->>Pi: SSH接続（192.168.68.74）
-        Mac->>Pi: wake.sh を実行
-        Pi->>Win: WoL マジックパケット送信（有線LAN）
-        Win-->>Win: スリープ解除・起動
-        Note over Win: 起動完了まで少し待機...
-        Mac->>Win: RDP接続
-        Win-->>Mac: デスクトップ表示
-    end
+    Mac->>Pi: SSH接続（192.168.68.74）
+    Mac->>Pi: wake.sh を実行
+    Pi->>Win: WoL マジックパケット送信（有線LAN）
+    Win-->>Win: スリープ解除・起動
+    Note over Win: 起動完了まで少し待機...
+    Mac->>Win: RDP接続
+    Win-->>Mac: デスクトップ表示
 ```
 
 ### フェーズ2：Tailscale経由の構成図
@@ -118,22 +116,20 @@ graph TD
 フェーズ1との違いは、SSHとRDPがTailscale経由になる点と、Windows起動後にTailscaleサービスが自動接続されるのを待つ点です。
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeCSS': 'svg { background: #ffffff !important; } .messageText, .loopText, .noteText, .labelText { fill: #1f2937 !important; color: #1f2937 !important; }', 'themeVariables': {'background': '#ffffff', 'mainBkg': '#ffffff', 'primaryTextColor': '#1f2937', 'textColor': '#1f2937', 'actorBkg': '#7B68EE', 'actorTextColor': '#ffffff', 'actorBorder': '#5A4FCF', 'activationBkgColor': '#EDE9FE', 'activationBorderColor': '#5A4FCF', 'sequenceNumberColor': '#1f2937', 'lineColor': '#5A4FCF', 'signalColor': '#5A4FCF', 'signalTextColor': '#1f2937', 'labelBoxBkgColor': '#ffffff', 'labelBoxBorderColor': '#CBD5E1', 'labelTextColor': '#1f2937', 'loopTextColor': '#1f2937', 'noteBkgColor': '#E8F8FF', 'noteTextColor': '#374151', 'noteBorderColor': '#0284C7'}}}%%
+%%{init: {'theme': 'base', 'themeCSS': '.mermaid, .mermaid svg, svg, svg[role="graphics-document"] { background: #ffffff !important; } .messageText, .loopText, .noteText, .labelText, .actor > text { fill: #1f2937 !important; color: #1f2937 !important; }', 'themeVariables': {'background': '#ffffff', 'mainBkg': '#ffffff', 'primaryTextColor': '#1f2937', 'textColor': '#1f2937', 'actorBkg': '#7B68EE', 'actorTextColor': '#ffffff', 'actorBorder': '#5A4FCF', 'activationBkgColor': '#EDE9FE', 'activationBorderColor': '#5A4FCF', 'sequenceNumberColor': '#1f2937', 'lineColor': '#5A4FCF', 'signalColor': '#5A4FCF', 'signalTextColor': '#1f2937', 'labelBoxBkgColor': '#ffffff', 'labelBoxBorderColor': '#CBD5E1', 'labelTextColor': '#1f2937', 'loopTextColor': '#1f2937', 'noteBkgColor': '#E8F8FF', 'noteTextColor': '#374151', 'noteBorderColor': '#0284C7'}}}%%
 sequenceDiagram
     participant Mac as MacBook Pro（外出先）
     participant Pi as Raspberry Pi
     participant Win as Windows 11 Pro
-    rect rgb(255, 255, 255)
-        Note over Mac,Win: Tailscale VPN で接続済み
-        Mac->>Pi: SSH接続（100.83.12.94 via Tailscale）
-        Mac->>Pi: wake.sh を実行
-        Pi->>Win: WoL マジックパケット送信（有線LAN）
-        Win-->>Win: スリープ解除・起動
-        Win-->>Win: Tailscale サービス自動接続
-        Note over Win: 起動完了まで少し待機...
-        Mac->>Win: RDP接続（100.119.171.112 via Tailscale）
-        Win-->>Mac: デスクトップ表示
-    end
+    Note over Mac,Win: Tailscale VPN で接続済み
+    Mac->>Pi: SSH接続（100.83.12.94 via Tailscale）
+    Mac->>Pi: wake.sh を実行
+    Pi->>Win: WoL マジックパケット送信（有線LAN）
+    Win-->>Win: スリープ解除・起動
+    Win-->>Win: Tailscale サービス自動接続
+    Note over Win: 起動完了まで少し待機...
+    Mac->>Win: RDP接続（100.119.171.112 via Tailscale）
+    Win-->>Mac: デスクトップ表示
 ```
 
 ---
