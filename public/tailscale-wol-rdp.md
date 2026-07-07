@@ -79,13 +79,15 @@ sequenceDiagram
     participant Mac as Mac Studio
     participant Pi as Raspberry Pi
     participant Win as Windows 11 Pro
-    Mac->>Pi: SSH接続（192.168.68.74）
-    Mac->>Pi: wake.sh を実行
-    Pi->>Win: WoL マジックパケット送信（有線LAN）
-    Win-->>Win: スリープ解除・起動
-    Note over Win: 起動完了まで少し待機...
-    Mac->>Win: RDP接続
-    Win-->>Mac: デスクトップ表示
+    rect rgb(255, 255, 255)
+        Mac->>Pi: SSH接続（192.168.68.74）
+        Mac->>Pi: wake.sh を実行
+        Pi->>Win: WoL マジックパケット送信（有線LAN）
+        Win-->>Win: スリープ解除・起動
+        Note over Win: 起動完了まで少し待機...
+        Mac->>Win: RDP接続
+        Win-->>Mac: デスクトップ表示
+    end
 ```
 
 ### フェーズ2：Tailscale経由の構成図
@@ -121,15 +123,17 @@ sequenceDiagram
     participant Mac as MacBook Pro（外出先）
     participant Pi as Raspberry Pi
     participant Win as Windows 11 Pro
-    Note over Mac,Win: Tailscale VPN で接続済み
-    Mac->>Pi: SSH接続（100.83.12.94 via Tailscale）
-    Mac->>Pi: wake.sh を実行
-    Pi->>Win: WoL マジックパケット送信（有線LAN）
-    Win-->>Win: スリープ解除・起動
-    Win-->>Win: Tailscale サービス自動接続
-    Note over Win: 起動完了まで少し待機...
-    Mac->>Win: RDP接続（100.119.171.112 via Tailscale）
-    Win-->>Mac: デスクトップ表示
+    rect rgb(255, 255, 255)
+        Note over Mac,Win: Tailscale VPN で接続済み
+        Mac->>Pi: SSH接続（100.83.12.94 via Tailscale）
+        Mac->>Pi: wake.sh を実行
+        Pi->>Win: WoL マジックパケット送信（有線LAN）
+        Win-->>Win: スリープ解除・起動
+        Win-->>Win: Tailscale サービス自動接続
+        Note over Win: 起動完了まで少し待機...
+        Mac->>Win: RDP接続（100.119.171.112 via Tailscale）
+        Win-->>Mac: デスクトップ表示
+    end
 ```
 
 ---
