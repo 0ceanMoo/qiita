@@ -43,3 +43,7 @@ echo "hello world"
 ## publish 更新確認
 
 この行は `npx qiita publish test-hello-world` で既存記事が更新されるか確認するための追記です。
+
+## 画像表示テスト
+
+![テスト画像](../images/test-hello-world/profile.jpeg)
