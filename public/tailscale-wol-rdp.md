@@ -74,7 +74,7 @@ graph LR
 各デバイス間の通信の流れを示します。Raspberry Piを中継してWindowsを起動させ、起動完了を待ってからRDP接続する順序がポイントです。
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryTextColor': '#1f2937', 'textColor': '#1f2937', 'actorBkg': '#4A90D9', 'actorTextColor': '#ffffff', 'actorBorder': '#2171B5', 'activationBkgColor': '#DBEAFE', 'activationBorderColor': '#2171B5', 'sequenceNumberColor': '#1f2937', 'lineColor': '#2563EB', 'signalColor': '#2563EB', 'signalTextColor': '#1f2937', 'labelBoxBkgColor': '#ffffff', 'labelBoxBorderColor': '#CBD5E1', 'labelTextColor': '#1f2937', 'loopTextColor': '#1f2937', 'noteBkgColor': '#FFF9C4', 'noteTextColor': '#374151', 'noteBorderColor': '#D97706'}}}%%
+%%{init: {'theme': 'base', 'themeCSS': 'svg { background: #ffffff !important; } .messageText, .loopText, .noteText, .labelText { fill: #1f2937 !important; color: #1f2937 !important; }', 'themeVariables': {'background': '#ffffff', 'mainBkg': '#ffffff', 'primaryTextColor': '#1f2937', 'textColor': '#1f2937', 'actorBkg': '#4A90D9', 'actorTextColor': '#ffffff', 'actorBorder': '#2171B5', 'activationBkgColor': '#DBEAFE', 'activationBorderColor': '#2171B5', 'sequenceNumberColor': '#1f2937', 'lineColor': '#2563EB', 'signalColor': '#2563EB', 'signalTextColor': '#1f2937', 'labelBoxBkgColor': '#ffffff', 'labelBoxBorderColor': '#CBD5E1', 'labelTextColor': '#1f2937', 'loopTextColor': '#1f2937', 'noteBkgColor': '#FFF9C4', 'noteTextColor': '#374151', 'noteBorderColor': '#D97706'}}}%%
 sequenceDiagram
     participant Mac as Mac Studio
     participant Pi as Raspberry Pi
@@ -116,7 +116,7 @@ graph TD
 フェーズ1との違いは、SSHとRDPがTailscale経由になる点と、Windows起動後にTailscaleサービスが自動接続されるのを待つ点です。
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryTextColor': '#1f2937', 'textColor': '#1f2937', 'actorBkg': '#7B68EE', 'actorTextColor': '#ffffff', 'actorBorder': '#5A4FCF', 'activationBkgColor': '#EDE9FE', 'activationBorderColor': '#5A4FCF', 'sequenceNumberColor': '#1f2937', 'lineColor': '#5A4FCF', 'signalColor': '#5A4FCF', 'signalTextColor': '#1f2937', 'labelBoxBkgColor': '#ffffff', 'labelBoxBorderColor': '#CBD5E1', 'labelTextColor': '#1f2937', 'loopTextColor': '#1f2937', 'noteBkgColor': '#E8F8FF', 'noteTextColor': '#374151', 'noteBorderColor': '#0284C7'}}}%%
+%%{init: {'theme': 'base', 'themeCSS': 'svg { background: #ffffff !important; } .messageText, .loopText, .noteText, .labelText { fill: #1f2937 !important; color: #1f2937 !important; }', 'themeVariables': {'background': '#ffffff', 'mainBkg': '#ffffff', 'primaryTextColor': '#1f2937', 'textColor': '#1f2937', 'actorBkg': '#7B68EE', 'actorTextColor': '#ffffff', 'actorBorder': '#5A4FCF', 'activationBkgColor': '#EDE9FE', 'activationBorderColor': '#5A4FCF', 'sequenceNumberColor': '#1f2937', 'lineColor': '#5A4FCF', 'signalColor': '#5A4FCF', 'signalTextColor': '#1f2937', 'labelBoxBkgColor': '#ffffff', 'labelBoxBorderColor': '#CBD5E1', 'labelTextColor': '#1f2937', 'loopTextColor': '#1f2937', 'noteBkgColor': '#E8F8FF', 'noteTextColor': '#374151', 'noteBorderColor': '#0284C7'}}}%%
 sequenceDiagram
     participant Mac as MacBook Pro（外出先）
     participant Pi as Raspberry Pi
