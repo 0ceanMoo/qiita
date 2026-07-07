@@ -79,6 +79,20 @@ http://localhost:8888
 
 ## 投稿・更新
 
+通常はローカルから直接 publish せず、`main` に push して GitHub Actions から publish します。
+Actions は `public/**`、`images/**`、`.github/workflows/publish.yml` が変わったときだけ起動します。
+
+```bash
+git add public images
+git commit -m "記事を更新"
+git push
+```
+
+Actions 内では `npx qiita publish --all` を実行します。
+Qiita CLI は Qiita 上の記事との差分を確認し、差分がある記事と新規記事だけを publish 対象にします。
+
+手元から確認目的で publish する場合:
+
 1記事だけ投稿・更新する場合:
 
 ```bash
@@ -102,6 +116,28 @@ npx qiita publish --all
 ```bash
 npx qiita publish tailscale-wol-rdp --force
 ```
+
+## 画像
+
+ローカルでは `images/` に画像を置き、記事から相対パスで参照します。
+
+```text
+Qiita/
+├── public/
+│   └── tailscale-wol-rdp.md
+└── images/
+    └── tailscale-wol-rdp/
+        └── rdp-connected.png
+```
+
+記事内では以下のように書きます。
+
+```md
+![RDP接続画面](../images/tailscale-wol-rdp/rdp-connected.png)
+```
+
+GitHub Actions 内で、投稿用の記事だけ GitHub raw URL に変換します。
+ローカルの `public/*.md` は相対パスのまま維持されます。
 
 ## Qiita 側の記事を取り込む
 

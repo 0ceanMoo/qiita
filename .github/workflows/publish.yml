@@ -1,4 +1,4 @@
-# Please set 'QIITA_TOKEN' secret to your repository
+# Please set 'QIITA_TOKEN' secret to your repository.
 name: Publish articles
 
 on:
@@ -6,6 +6,10 @@ on:
     branches:
       - main
       - master
+    paths:
+      - 'public/**'
+      - 'images/**'
+      - '.github/workflows/publish.yml'
   workflow_dispatch:
 
 permissions:
@@ -18,12 +22,156 @@ concurrency:
 jobs:
   publish_articles:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: increments/qiita-cli/actions/publish@v1
+
+      - uses: actions/setup-node@v4
         with:
-          qiita-token: ${{ secrets.QIITA_TOKEN }}
-          root: "."
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare articles for Qiita
+        env:
+          RAW_BASE_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}
+        run: |
+          cp -R public public.local
+
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          raw_base_url = os.environ["RAW_BASE_URL"].rstrip("/")
+          public_dir = Path("public")
+
+          patterns = [
+              (re.compile(r'(\]\()(?P<path>\.\./images/[^)]+)(\))'), "../images/"),
+              (re.compile(r'(\]\()(?P<path>\./images/[^)]+)(\))'), "./images/"),
+              (re.compile(r'(\]\()(?P<path>/images/[^)]+)(\))'), "/images/"),
+          ]
+
+          for article_path in public_dir.glob("*.md"):
+              content = article_path.read_text()
+
+              for pattern, prefix in patterns:
+                  def replace(match):
+                      image_path = match.group("path")
+                      normalized_path = image_path.removeprefix(prefix)
+                      return f"{match.group(1)}{raw_base_url}/images/{normalized_path}{match.group(3)}"
+
+                  content = pattern.sub(replace, content)
+
+              article_path.write_text(content)
+          PY
+
+      - name: Publish to Qiita
+        run: npx qiita publish --all
+        env:
+          QIITA_TOKEN: ${{ secrets.QIITA_TOKEN }}
+
+      - name: Restore local image paths and keep Qiita metadata
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          metadata_keys = [
+              "id",
+              "updated_at",
+              "organization_url_name",
+              "slide",
+              "ignorePublish",
+              "posting_campaign_uuid",
+              "agreed_posting_campaign_term",
+          ]
+
+          def split_frontmatter(content):
+              if not content.startswith("---\n"):
+                  return None, content
+              end = content.find("\n---\n", 4)
+              if end == -1:
+                  return None, content
+              return content[4:end], content[end + 5:]
+
+          def frontmatter_values(frontmatter):
+              values = {}
+              if frontmatter is None:
+                  return values
+              for line in frontmatter.splitlines():
+                  if ":" not in line or line.startswith(" "):
+                      continue
+                  key, value = line.split(":", 1)
+                  key = key.strip()
+                  if key in metadata_keys:
+                      values[key] = value.strip()
+              return values
+
+          def apply_values(frontmatter, values):
+              lines = frontmatter.splitlines()
+              seen = set()
+              updated = []
+
+              for line in lines:
+                  if ":" not in line or line.startswith(" "):
+                      updated.append(line)
+                      continue
+                  key, _ = line.split(":", 1)
+                  key = key.strip()
+                  if key in values:
+                      updated.append(f"{key}: {values[key]}")
+                      seen.add(key)
+                  else:
+                      updated.append(line)
+
+              for key in metadata_keys:
+                  if key in values and key not in seen:
+                      updated.append(f"{key}: {values[key]}")
+
+              return "\n".join(updated)
+
+          source_dir = Path("public.local")
+          published_dir = Path("public")
+
+          for source_path in source_dir.glob("*.md"):
+              published_path = published_dir / source_path.name
+              if not published_path.exists():
+                  continue
+
+              source_content = source_path.read_text()
+              published_content = published_path.read_text()
+
+              source_fm, source_body = split_frontmatter(source_content)
+              published_fm, _ = split_frontmatter(published_content)
+              if source_fm is None or published_fm is None:
+                  continue
+
+              values = frontmatter_values(published_fm)
+              restored_fm = apply_values(source_fm, values)
+              source_path.write_text(f"---\n{restored_fm}\n---\n{source_body}")
+
+          for path in published_dir.iterdir():
+              if path.name == ".remote":
+                  continue
+              if path.is_file():
+                  path.unlink()
+
+          for source_path in source_dir.iterdir():
+              if source_path.is_file():
+                  target_path = published_dir / source_path.name
+                  target_path.write_text(source_path.read_text())
+          PY
+
+          rm -rf public.local public/.remote
+
+      - name: Commit Qiita metadata updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/*.md
+          git diff --staged --quiet || git commit -m "chore: update Qiita article metadata [skip ci]"
+          git push
