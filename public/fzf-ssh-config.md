@@ -5,7 +5,7 @@ tags:
   - fzf
   - shell
   - zsh
-private: true
+private: false
 updated_at: '2026-07-08T14:03:51+09:00'
 id: 79eb061f9e00e7336777
 organization_url_name: null
@@ -17,7 +17,13 @@ agreed_posting_campaign_term: false
 
 ## SSH 接続先を fzf で選びたい
 
-SSH の接続先を覚えて正確に入力する代わりに、`sshi` を実行して `~/.ssh/config` の設定から選べるようにする。
+自分は、SSH の接続先を基本的に全部 `~/.ssh/config` に書いている。
+
+そうしていると、`~/.ssh/config` の中に Host がどんどん増えていく。
+
+`dev-server` だったか、`dev-app` だったか。短い名前ならまだいいけど、似た名前が増えると普通に探しづらい。
+
+そこで `~/.ssh/config` に書いてある `Host` を `fzf` で選んで、そのまま SSH できるようにした。
 
 たとえば、これまでこう打っていたものを、
 
@@ -33,23 +39,25 @@ sshi
 
 ![fzfでSSH接続先を選ぶ](../images/fzf-ssh-config/fzf_ssh_config.gif)
 
-`sshi` を実行すると、`~/.ssh/config` に登録済みの `Host` が一覧表示される。あとは `fzf` で数文字入力して候補を絞り込み、Enter で接続する。
+`sshi` を実行すると、`~/.ssh/config` に登録済みの `Host` が一覧表示される。あとは `fzf` で数文字入力して、Enter で接続する。
+
+小さい alias だけど、`~/.ssh/config` の中から接続先を探す時間が減る。
 
 ## セットアップ
 
 ### 必要なツール
 
-必要なのは次の3つ。
+使うのはこの3つ。
 
 | 必要なもの | 役割 |
 |---|---|
 | `~/.ssh/config` | SSH の接続先一覧として使う |
 | `fzf` | 接続先をインクリメンタルサーチする |
-| alias | `~/.ssh/config` から Host を取り出して SSH する |
+| alias | `Host` を取り出して SSH する |
 
 この記事では `~/.ssh/config` の書き方は扱わない。すでに `ssh dev-server` のように Host 名で SSH できている前提。
 
-### install
+### fzf を入れる
 
 macOS なら Homebrew で入れる。
 
@@ -61,7 +69,7 @@ brew install fzf
 fzf --version
 ```
 
-### alias
+### alias を追加する
 
 `~/.zshrc` などに以下を追加する。
 
@@ -78,7 +86,7 @@ source ~/.zshrc
 
 これで `sshi` が使える。
 
-`sshl` を実行すると、`~/.ssh/config` の `Host` 一覧が表示される。
+`sshl` は、`~/.ssh/config` から `Host` だけを取り出すための alias。
 
 ```sh
 sshl
@@ -86,21 +94,16 @@ sshl
 
 ![sshlでSSH接続先を一覧表示する](../images/fzf-ssh-config/sshl.png)
 
-## まとめ
+`sshl` は `Host ` で始まる行を拾って、先頭の `Host ` だけ削っている。
 
-`~/.ssh/config` に接続先をまとめているなら、`fzf` を組み合わせるだけで接続先を探しやすくできる。
+`sshi` は、その一覧を `fzf` に渡して、選んだ Host に `ssh` する。
 
-`sshi` を実行して、表示された Host を絞り込んで選ぶだけなので、設定も使い方もシンプル。
+## 使ってみて
 
-### メリット
+SSH の接続先を必ず `~/.ssh/config` に書く運用だと、Host の数は自然に増えていく。
 
-- Host 名を正確に覚えていなくても SSH 接続できる
-- `~/.ssh/config` を開いて Host 名を確認する回数が減る
-- 接続先が増えても `fzf` で絞り込める
+そういう人なら、`sshi` で一覧から絞り込めるだけでもだいぶ楽になる。`~/.ssh/config` を開いて Host 名を探す回数も減る。
 
-### デメリット
+逆に、接続先が少ないなら普通に `ssh host-name` と打つほうが早い。`fzf` も別途必要なので、誰にでも入れておくものではないと思う。
 
-- 接続先が少ないなら、普通に `ssh host-name` と打つほうが早い
-- `fzf` を別途インストールする必要がある
-- `~/.ssh/config` に登録していない接続先には使えない
-- `ssh -i key.pem user@host` のような SSH コマンドのオプションを忘れやすくなる
+自分は、SSH の接続先を `~/.ssh/config` に書いて、この alias で選ぶ形にしている。
