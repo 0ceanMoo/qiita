@@ -15,169 +15,92 @@ posting_campaign_uuid: null
 agreed_posting_campaign_term: false
 ---
 
-## やりたいこと
+## SSH 接続先を fzf で選びたい
 
-`~/.ssh/config` に書いてある `Host` を一覧化して、`fzf` でインクリメンタルサーチして、そのまま SSH 接続できるようにする。
+SSH の接続先を覚えて正確に入力する代わりに、`sshi` を実行して `~/.ssh/config` の設定から選べるようにする。
 
-サーバー名を覚えていなくても、うろ覚えの文字を打てば候補を絞り込める。
-
-![fzfでSSH接続先を選ぶ](../images/fzf-ssh-config/fzf_ssh_config.gif)
-
-## alias
-
-使っている alias はこれ。
-
-```sh
-alias sshl="cat ~/.ssh/config |grep ^Host\  |sed -e 's/^Host\ //g'"
-alias sshi="sshl | fzf | xargs -I{} sh -c 'ssh {} </dev/tty' ssh"
-```
-
-`sshi` を実行すると、`~/.ssh/config` の `Host` が `fzf` に流れて、選んだ接続先へ SSH できる。
-
-```sh
-sshi
-```
-
-## ~/.ssh/config の例
-
-たとえば `~/.ssh/config` にこう書いておく。
-
-```sshconfig
-Host dev-server
-  HostName 192.168.10.20
-  User ubuntu
-  IdentityFile ~/.ssh/dev-server.pem
-
-Host bastion
-  HostName bastion.example.com
-  User ec2-user
-  IdentityFile ~/.ssh/bastion.pem
-
-Host raspberrypi
-  HostName 192.168.68.74
-  User pi
-```
-
-これで `sshi` を実行すると、以下のような候補から選べる。
-
-```text
-dev-server
-bastion
-raspberrypi
-```
-
-## sshl の中身
-
-```sh
-alias sshl="cat ~/.ssh/config |grep ^Host\  |sed -e 's/^Host\ //g'"
-```
-
-これは `~/.ssh/config` から `Host ` で始まる行だけを抜き出して、先頭の `Host ` を消している。
-
-```sh
-cat ~/.ssh/config
-```
-
-で設定ファイルを読み、
-
-```sh
-grep ^Host\ 
-```
-
-で `Host ` から始まる行だけを取り出し、
-
-```sh
-sed -e 's/^Host\ //g'
-```
-
-で `Host ` を削る。
-
-結果として、SSH 接続先の一覧だけが出る。
-
-```text
-dev-server
-bastion
-raspberrypi
-```
-
-## sshi の中身
-
-```sh
-alias sshi="sshl | fzf | xargs -I{} sh -c 'ssh {} </dev/tty' ssh"
-```
-
-`sshl` の結果を `fzf` に渡して、選んだ1件を `ssh` に渡している。
-
-流れとしてはこう。
-
-```text
-~/.ssh/config
-  ↓
-sshl で Host 一覧にする
-  ↓
-fzf で絞り込む
-  ↓
-選んだ Host に ssh する
-```
-
-`fzf` はインクリメンタルサーチできるので、接続先が増えても探しやすい。
-
-## </dev/tty を付けている理由
-
-```sh
-ssh {} </dev/tty
-```
-
-`fzf` や `xargs` をパイプでつないだあとにそのまま `ssh` すると、標準入力の扱いが微妙になることがある。
-
-`</dev/tty` を付けておくと、SSH の対話入力をちゃんと端末から受け取れる。
-
-たとえば、パスフレーズ入力や接続後の操作が必要なときに困りにくい。
-
-## 便利なところ
-
-一番便利なのは、SSH の接続先名を覚えなくてよくなること。
+たとえば、これまでこう打っていたものを、
 
 ```sh
 ssh dev-server
 ```
 
-のように Host 名を正確に打たなくても、`sshi` を実行して候補から選べばいい。
-
-`~/.ssh/config` を接続先データベースのように使えるので、接続先が増えるほど便利になる。
-
-## デメリット
-
-便利な反面、`ssh` コマンドのオプションを忘れやすくなる。
-
-たとえば鍵を指定する `-i`。
+こうできる。
 
 ```sh
-ssh -i ~/.ssh/dev-server.pem ubuntu@192.168.10.20
+sshi
 ```
 
-普段から `~/.ssh/config` に寄せていると、こういうオプションを直接打つ機会が減る。
+![fzfでSSH接続先を選ぶ](../images/fzf-ssh-config/fzf_ssh_config.gif)
 
-ただ、これは悪いことばかりでもない。
+`sshi` を実行すると、`~/.ssh/config` に登録済みの `Host` が一覧表示される。あとは `fzf` で数文字入力して候補を絞り込み、Enter で接続する。
 
-`IdentityFile` や `User`、`HostName` を `~/.ssh/config` に書いておけば、毎回 `-i` やユーザー名を打たなくてよくなる。
+## セットアップ
 
-```sshconfig
-Host dev-server
-  HostName 192.168.10.20
-  User ubuntu
-  IdentityFile ~/.ssh/dev-server.pem
+### 必要なツール
+
+必要なのは次の3つ。
+
+| 必要なもの | 役割 |
+|---|---|
+| `~/.ssh/config` | SSH の接続先一覧として使う |
+| `fzf` | 接続先をインクリメンタルサーチする |
+| alias | `~/.ssh/config` から Host を取り出して SSH する |
+
+この記事では `~/.ssh/config` の書き方は扱わない。すでに `ssh dev-server` のように Host 名で SSH できている前提。
+
+### install
+
+macOS なら Homebrew で入れる。
+
+```sh
+brew install fzf
 ```
 
-設定を `~/.ssh/config` に寄せる運用だと割り切れば、むしろコマンドを短くできる。
+```sh
+fzf --version
+```
+
+### alias
+
+`~/.zshrc` などに以下を追加する。
+
+```sh
+alias sshl="cat ~/.ssh/config | grep '^Host ' | sed -e 's/^Host //g'"
+alias sshi="sshl | fzf | xargs -I{} sh -c 'ssh {} </dev/tty' ssh"
+```
+
+追加したら、設定を読み込み直す。
+
+```sh
+source ~/.zshrc
+```
+
+これで `sshi` が使える。
+
+`sshl` を実行すると、`~/.ssh/config` の `Host` 一覧が表示される。
+
+```sh
+sshl
+```
+
+![sshlでSSH接続先を一覧表示する](../images/fzf-ssh-config/sshl.png)
 
 ## まとめ
 
-`~/.ssh/config` と `fzf` を組み合わせると、SSH 接続先をインクリメンタルサーチして選べるようになる。
+`~/.ssh/config` に接続先をまとめているなら、`fzf` を組み合わせるだけで接続先を探しやすくできる。
 
-接続先が少ないうちはありがたみが小さいが、増えてくるとかなり楽になる。
+`sshi` を実行して、表示された Host を絞り込んで選ぶだけなので、設定も使い方もシンプル。
 
-```sh
-alias sshl="cat ~/.ssh/config |grep ^Host\  |sed -e 's/^Host\ //g'"
-alias sshi="sshl | fzf | xargs -I{} sh -c 'ssh {} </dev/tty' ssh"
-```
+### メリット
+
+- Host 名を正確に覚えていなくても SSH 接続できる
+- `~/.ssh/config` を開いて Host 名を確認する回数が減る
+- 接続先が増えても `fzf` で絞り込める
+
+### デメリット
+
+- 接続先が少ないなら、普通に `ssh host-name` と打つほうが早い
+- `fzf` を別途インストールする必要がある
+- `~/.ssh/config` に登録していない接続先には使えない
+- `ssh -i key.pem user@host` のような SSH コマンドのオプションを忘れやすくなる
