@@ -1,5 +1,5 @@
 ---
-title: fzf と ~/.ssh/config で SSH 接続先をインクリメンタルサーチする
+title: fzf と ~/.ssh/config で SSH 接続先をインクリメンタルサーチとあいまい検索で爆速で接続する
 tags:
   - SSH
   - fzf
