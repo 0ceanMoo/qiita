@@ -6,7 +6,7 @@ tags:
   - shell
   - zsh
 private: true
-updated_at: '2026-07-08T04:09:34+09:00'
+updated_at: '2026-07-08T14:03:51+09:00'
 id: 79eb061f9e00e7336777
 organization_url_name: null
 slide: false
