@@ -7,7 +7,7 @@ tags:
   - DevOps
   - Husky
 private: false
-updated_at: '2026-08-05T13:14:47+09:00'
+updated_at: '2026-08-05T13:22:33+09:00'
 id: 3e02e27d5f9d1b8e49bd
 organization_url_name: null
 slide: false
