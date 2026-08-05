@@ -1,5 +1,5 @@
 ---
-title: ブランチ戦略とCIの多層防御: pre-commit、pre-push、PRでコード品質を守る設計
+title: "ブランチ戦略とCIの多層防御: pre-commit、pre-push、PRでコード品質を守る設計"
 tags:
   - Git
   - GitHubActions
