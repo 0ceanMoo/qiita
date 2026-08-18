@@ -7,7 +7,7 @@ tags:
   - WakeOnLan
   - tailscale
 private: false
-updated_at: '2026-08-06T20:23:21+09:00'
+updated_at: '2026-08-18T18:22:15+09:00'
 id: 3c3104137836a2e3eeca
 organization_url_name: null
 slide: false
