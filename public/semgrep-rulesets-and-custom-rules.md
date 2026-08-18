@@ -1,5 +1,5 @@
 ---
-title: "Semgrepのルールセットとカスタムルールをサンプルコードで比較する"
+title: "Semgrepのルールセットとカスタムルールを実例で比較する"
 tags:
   - Semgrep
   - SAST
@@ -11,7 +11,7 @@ updated_at: ''
 id: null
 organization_url_name: null
 slide: false
-ignorePublish: true
+ignorePublish: false
 posting_campaign_uuid: null
 agreed_posting_campaign_term: false
 ---
@@ -26,7 +26,9 @@ Semgrepは使っているけど、`--config auto`が何をしているのか、O
 2. **`--config auto`はルールをどう読み込んでいるのか**
 3. **ルールセット(`p/xxx`)ごとにどれくらい検出範囲が違うのか**
 4. **誤検知はどう抑制するのか、その注意点**
-5. **カスタムルールがなぜ必要になるのか、公開されているルールで十分なのか**
+5. **`auto`はどこまで検出できて、どこを見逃すのか**
+6. **カスタムルールがなぜ必要になるのか、公開されているルールで十分なのか**
+7. **`semgrep scan`と`semgrep ci`はどう使い分けるのか**
 
 すべて実際に手元で実行した結果に基づいている。検証環境は以下の通り。
 
@@ -226,6 +228,8 @@ app.get("/fetch", function (req, res) {
 pattern-either: [pattern: "FROM $IMAGE"]
 pattern-not: "FROM $IMAGE:$VERSION"   # ← "latest"もここに含まれてしまう
 pattern-not: "FROM $IMAGE@$DIGEST"
+pattern-not: "FROM $IMAGE:$VERSION@$DIGEST"
+pattern-not: "FROM scratch"   # マルチステージビルドの誤検知対応で後から追加された除外
 ```
 
 このルールはタグの有無を検査するもので、タグの値までは評価していない。`:latest`もタグの一種として`$IMAGE:$VERSION`にマッチするため、検出対象から外れる。「タグが完全にない場合」だけを検出する作りになっている。
@@ -353,6 +357,8 @@ report findings that were introduced by the PR/MR.
 
 When logged in, `semgrep ci` runs rules configured on Semgrep App and
 sends findings to your findings dashboard.
+
+Only displays findings that were marked as blocking.
 ```
 
 | | `semgrep scan` | `semgrep ci` |
