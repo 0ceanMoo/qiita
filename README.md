@@ -139,6 +139,20 @@ Qiita/
 GitHub Actions 内で、投稿用の記事だけ GitHub raw URL に変換します。
 ローカルの `public/*.md` は相対パスのまま維持されます。
 
+### ローカルプレビューで画像を表示する
+
+`npx qiita preview` のサーバーは `images/` ディレクトリを配信していないため、素の状態では記事内の画像が表示されず、リンクをクリックすると 404 になる（Qiita CLI 側の制約で、push しないと直らない）。
+
+回避策として、Qiita CLI が実際に静的配信しているディレクトリ（`node_modules/@qiita/qiita-cli/dist/public`）に、リポジトリの `images/` へのシンボリックリンクを張る。
+
+```bash
+ln -sf "$(pwd)/images" node_modules/@qiita/qiita-cli/dist/public/images
+```
+
+これで記事内の `../images/...` が `http://localhost:8888/images/...` に解決され、push せずにローカルの画像編集がそのままプレビューに反映されるようになる。
+
+> **注意**: このリンクは `node_modules` 配下に作るため、`npm install` し直すと消える。画像が表示されなくなったら、上のコマンドを再実行する。
+
 ## Qiita 側の記事を取り込む
 
 Qiita 上で編集した内容をローカルに取り込む場合:
